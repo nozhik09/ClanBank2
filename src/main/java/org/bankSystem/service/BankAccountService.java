@@ -82,7 +82,7 @@ public class BankAccountService {
     public void exchangeCurrency(int accountId, String targetCurrencyCode, double amount) {
         Optional<BankAccount> accountOpt = bankAccountRepository.getBankAccountById(accountId);
         accountOpt.ifPresentOrElse(account -> {
-            double exchangeRate = currencyService.getExchangeCourse(account.getCurrency().getCode(), targetCurrencyCode);
+            double exchangeRate = currencyService.getExchangeCourse(targetCurrencyCode);
             double convertedAmount = amount * exchangeRate;
 
             if (account.getBalance() >= amount) {

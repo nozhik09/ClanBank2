@@ -24,7 +24,7 @@ public class UsersRepository {
         Users adminUser = new Users(userId.getAndIncrement(), "admin123",
                 "Vasya@gmail.com", "Kakasss1223!", Role.ADMIN, emptyAccountsList);
         Users user2 = new Users(userId.getAndIncrement(), "user133",
-                "Vasya@gm3il.com", "Kaka54s1223!", Role.USER, emptyAccountsList);
+                "admnin", "admnin", Role.USER, emptyAccountsList);
         Users user3 = new Users(userId.getAndIncrement(), "user143",
                 "Vasya@gm2mail.com", "Kaka35s1223!", Role.USER, emptyAccountsList);
 
