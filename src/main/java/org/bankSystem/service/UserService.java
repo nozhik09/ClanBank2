@@ -195,11 +195,9 @@ public class UserService {
             return null;
         }
     }
-
-
-
-
-
-
+//меняем роль у юзера
+    public void changeRole(int userID, Role admin){
+        userRepository.changeRole(userID, admin);
+    }
 
 }

@@ -98,5 +98,11 @@ public class UsersRepository {
         return new ArrayList<>(usersMap.values());
     }
 
+    public void changeRole(int userId, Role newRole) {
+        Users user = getUserById(userId);
+        if (user != null) {
+            user.setRole(newRole);
+        }
+    }
 }
 
