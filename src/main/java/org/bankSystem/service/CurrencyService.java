@@ -1,18 +1,14 @@
 package org.bankSystem.service;
 
+import org.bankSystem.model.Course;
 import org.bankSystem.model.Currency;
 import org.bankSystem.repository.CurrencyRepository;
 
+import java.util.Map;
 import java.util.Set;
 
+
 public class CurrencyService {
-
-//    private Map<String,Currency> currencies = new HashMap<>();
-//    public CurrencyService() {
-//        currencies.put("USD",new Currency("US Dollar","USD"));
-//    }
-//    public double getExchangeCourse(String code, String targetCurrencyCode) {
-
     CurrencyRepository currencyRepository = new CurrencyRepository();
 
 // метод добаления новой валюты
@@ -30,26 +26,32 @@ public class CurrencyService {
         if (rate<=0) throw new RuntimeException("Курс валюты не может быть меньше 0 ");;
         return currencyRepository.addNewCurrency(name,code,rate);
     }
+
     public Currency removeCurrency(String name,String code){
-
         return currencyRepository.removeCurrency(name,code);
-
-
+    }
+    public Map<Currency, Course> changeCurrencyRate(String code , Double newRate){
+        if (newRate<=0) throw new RuntimeException("Не корректный курс ");
+        return currencyRepository.changeCourseRate(code,newRate);
     }
 
-    public Currency getCurrencyByCode(String currencyCode) {
-        return currencyRepository.getCurrencyByCode(currencyCode);
+    public void checkAllRate(){
+        currencyRepository.readFromFile();
     }
 
 
 
-
-
-
-//    public void addCurrency (Currency currency) {
-//        currencies.put(currency.getCode(),currency);
-//    }
 
 }
+
+
+
+
+
+
+
+
+
+
 
 
