@@ -1,6 +1,6 @@
-package service;
+package org.bankSystem.service;
 
-import model.Operations;
+import org.bankSystem.model.Operations;
 
 import java.util.List;
 

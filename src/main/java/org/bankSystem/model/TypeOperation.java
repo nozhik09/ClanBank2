@@ -1,4 +1,4 @@
-package model;
+package org.bankSystem.model;
 
 public enum TypeOperation {
     DEBIT,

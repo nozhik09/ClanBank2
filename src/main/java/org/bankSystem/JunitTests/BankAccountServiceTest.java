@@ -1,17 +1,17 @@
-package JunitTests;
+package org.bankSystem.JunitTests;
 
-import model.BankAccount;
-import model.Currency;
-import model.Role;
-import model.Users;
+import org.bankSystem.model.BankAccount;
+import org.bankSystem.model.Currency;
+import org.bankSystem.model.Role;
+import org.bankSystem.model.Users;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import repository.BankAccountRepository;
-import repository.UsersRepository;
-import service.BankAccountService;
-import service.CurrencyService;
-import service.OperationService;
-import service.UserService;
+import org.bankSystem.repository.BankAccountRepository;
+import org.bankSystem.repository.UsersRepository;
+import org.bankSystem.service.BankAccountService;
+import org.bankSystem.service.CurrencyService;
+import org.bankSystem.service.OperationService;
+import org.bankSystem.service.UserService;
 
 import java.util.ArrayList;
 

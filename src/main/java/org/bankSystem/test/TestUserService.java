@@ -2,25 +2,26 @@
  * created by max$
  */
 
-package test;
+package org.bankSystem.test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
-import model.BankAccount;
-import model.Currency;
+
+import org.bankSystem.model.BankAccount;
+import org.bankSystem.model.Currency;
+
+import org.bankSystem.model.Role;
+import org.bankSystem.model.Users;
+import org.bankSystem.repository.BankAccountRepository;
+import org.bankSystem.repository.CurrencyRepository;
+import org.bankSystem.repository.UsersRepository;
+import org.bankSystem.service.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import model.Role;
-import model.Users;
-import repository.BankAccountRepository;
-import repository.CurrencyRepository;
-import repository.UsersRepository;
-import service.*;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestUserService {
     private UserService userService;

@@ -1,12 +1,12 @@
 
 
-package service;
+package org.bankSystem.service;
 
-import model.BankAccount;
-import model.Role;
-import model.Users;
-import repository.BankAccountRepository;
-import repository.UsersRepository;
+import org.bankSystem.model.BankAccount;
+import org.bankSystem.model.Role;
+import org.bankSystem.model.Users;
+import org.bankSystem.repository.BankAccountRepository;
+import org.bankSystem.repository.UsersRepository;
 
 import java.util.ArrayList;
 import java.util.List;

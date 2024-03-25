@@ -1,8 +1,8 @@
-package repository;
+package org.bankSystem.repository;
 
-import model.BankAccount;
-import model.Role;
-import model.Users;
+import org.bankSystem.model.BankAccount;
+import org.bankSystem.model.Role;
+import org.bankSystem.model.Users;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -1,8 +1,8 @@
-package repository;
-import model.BankAccount;
-import model.Currency;
-import model.Role;
-import model.Users;
+package org.bankSystem.repository;
+import org.bankSystem.model.BankAccount;
+import org.bankSystem.model.Currency;
+import org.bankSystem.model.Role;
+import org.bankSystem.model.Users;
 
 import java.util.*;
 import java.util.stream.Collectors;

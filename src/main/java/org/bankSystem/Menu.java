@@ -1,20 +1,16 @@
 package org.bankSystem;
 
+
 import org.bankSystem.model.BankAccount;
-import org.bankSystem.model.Course;
 import org.bankSystem.model.Users;
-import org.bankSystem.network.CurrencyNetworkWorker;
 import org.bankSystem.network.LatestCurrencyResponse;
 import org.bankSystem.repository.BankAccountRepository;
-import org.bankSystem.repository.CurrencyRepository;
 import org.bankSystem.repository.UsersRepository;
 import org.bankSystem.service.*;
 import org.bankSystem.util.MyLinkedList;
 
 import java.util.*;
 
-import static org.bankSystem.service.UserService.isValidEmail;
-import static org.bankSystem.service.UserService.isValidPassword;
 
 public class Menu {
     enum MenuItem {
@@ -32,6 +28,7 @@ public class Menu {
         CHECK_ALL_OPERATIONS("Просмотр всех операций"),
         CHECK_ALL_ACCOUNTS("Просмотр всех счетов"),
         CHANGES_EXCHANGE("Изменение курса валют"),
+        EXCHANGE_ROLE("Изменение роли"),
         EXIT("Выход");
 
 
@@ -52,15 +49,16 @@ public class Menu {
     private Users user;
     private final Scanner scanner = new Scanner(System.in);
     private MyLinkedList<MenuItem> menu = new MyLinkedList<>();
-    private service.UserService userService = new service.UserService(new UsersRepository());
-    private service.CurrencyService currencyService = new service.CurrencyService();
-    private service.OperationService operationService = new service.OperationService();
+    private UserService userService = new UserService(new UsersRepository(), new BankAccountRepository());
+    private CurrencyService currencyService = new CurrencyService();
+    private OperationService operationService = new OperationService();
     private BankAccountRepository bankAccountRepository = new BankAccountRepository();
-    private service.BankAccountService bankAccountService = new service.BankAccountService(
+    private BankAccountService bankAccountService = new BankAccountService(
             bankAccountRepository,
             userService,
             currencyService,
             operationService);
+
 
     // Public methods
     public void run() {
@@ -132,6 +130,9 @@ public class Menu {
             case CHECK_ALL_OPERATIONS:
 
                 break;
+            case EXCHANGE_ROLE:
+
+                break;
 
             case EXIT:
                 break;
@@ -197,7 +198,7 @@ public class Menu {
         }
     }
 
-    private void registerAction() {
+    private void registerAction() throws EmailValidateException {
         System.out.println("Введите Имя");
         String name = scanner.nextLine();
         System.out.print("Введите ваш Email: ");
@@ -208,9 +209,7 @@ public class Menu {
             user = userService.registerUser(name, email, password);
             System.out.println("Вы успешно авторизировались!");
             createRoleMenu();
-        } catch (service.EmailValidateException e) {
-            System.out.println("Неправильный формат email: " + e.getMessage());
-        } catch (service.PasswordValidationException e) {
+        } catch (PasswordValidationException e) {
             System.out.println("Неправильный формат пароля: " + e.getMessage());
         } catch (Exception e) {
             System.out.println("Something went wrong!");
@@ -255,7 +254,7 @@ public class Menu {
         BankAccount bankAccount = choseBankAccount();
         System.out.println("Сколько вы хотите обменять??");
         double amount = scanner.nextDouble();
-        bankAccountService.exchangeCurrency(bankAccount.getId(),bankAccount.getCurrency().getCode(), amount);
+        bankAccountService.exchangeCurrency(bankAccount.getId(), bankAccount.getCurrency().getCode(), amount);
         System.out.println("Вы успешно обменяли деньги!");
     }
 
@@ -269,8 +268,8 @@ public class Menu {
     private void exchangeHistoryAction() {
         System.out.println("Курс валют");
         try {
-            LatestCurrencyResponse latestCurrencyResponse = currencyService.getExchangeCourse();
-            for (String key: latestCurrencyResponse.getRates().keySet()) {
+            LatestCurrencyResponse latestCurrencyResponse = currencyService.//TODO добавить метод  ;
+            for (String key : latestCurrencyResponse.getRates().keySet()) {
                 System.out.printf("%s: %.4f\n", key, latestCurrencyResponse.getRates().get(key));
             }
 
@@ -310,9 +309,15 @@ public class Menu {
         //Воздух
     }
 
+    private void issueAdmin() {
+
+
+    }
+
     private void exitAction() {
         System.exit(0);
     }
+
     private BankAccount choseBankAccount() {
         List<BankAccount> bankAccounts = user.getBankAccounts();
         for (BankAccount bankAccount : bankAccounts) {

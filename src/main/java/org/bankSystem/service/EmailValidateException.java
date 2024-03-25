@@ -3,7 +3,7 @@
  */
 
 
-package service;
+package org.bankSystem.service;
 
 public class EmailValidateException extends Exception{
     public EmailValidateException(String message) {

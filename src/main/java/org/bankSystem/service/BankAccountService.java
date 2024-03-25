@@ -1,11 +1,11 @@
 
-package service;
+package org.bankSystem.service;
 
-import model.BankAccount;
-import model.Currency;
-import model.Users;
-import model.Operations;
-import repository.BankAccountRepository;
+import org.bankSystem.model.BankAccount;
+import org.bankSystem.model.Currency;
+import org.bankSystem.model.Users;
+import org.bankSystem.model.Operations;
+import org.bankSystem.repository.BankAccountRepository;
 
 import java.util.List;
 import java.util.Optional;

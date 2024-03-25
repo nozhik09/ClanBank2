@@ -3,7 +3,7 @@
  */
 
 
-package service;
+package org.bankSystem.service;
 
 public class PasswordValidationException extends Exception{
     public PasswordValidationException(String message) {

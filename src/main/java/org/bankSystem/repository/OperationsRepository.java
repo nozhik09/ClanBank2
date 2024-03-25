@@ -1,7 +1,7 @@
-package repository;
+package org.bankSystem.repository;
 
-import model.Operations;
-import model.TypeOperation;
+import org.bankSystem.model.Operations;
+import org.bankSystem.model.TypeOperation;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -1,8 +1,8 @@
-package repository;
+package org.bankSystem.repository;
 
 
-import model.Course;
-import model.Currency;
+import org.bankSystem.model.Course;
+import org.bankSystem.model.Currency;
 
 import java.io.*;
 import java.util.*;
