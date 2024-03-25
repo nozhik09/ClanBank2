@@ -2,7 +2,9 @@ package org.bankSystem;
 
 
 import org.bankSystem.model.BankAccount;
+import org.bankSystem.model.Currency;
 import org.bankSystem.model.Users;
+import org.bankSystem.network.CurrencyNetworkWorker;
 import org.bankSystem.network.LatestCurrencyResponse;
 import org.bankSystem.repository.BankAccountRepository;
 import org.bankSystem.repository.UsersRepository;
@@ -116,10 +118,10 @@ public class Menu {
                 closeAccountAction();
                 break;
             case EXCHANGE_HISTORY:
-                exchangeHistoryAction();
+//                exchangeHistoryAction();
                 break;
             case ADD_NEW_CURRENCY:
-
+                addNewCurrency();
                 break;
             case CHANGES_EXCHANGE:
 
@@ -198,7 +200,7 @@ public class Menu {
         }
     }
 
-    private void registerAction() throws EmailValidateException {
+    private void registerAction() {
         System.out.println("Введите Имя");
         String name = scanner.nextLine();
         System.out.print("Введите ваш Email: ");
@@ -265,18 +267,18 @@ public class Menu {
         bankAccountService.printAccountOperation(bankAccount.getId());
     }
 
-    private void exchangeHistoryAction() {
-        System.out.println("Курс валют");
-        try {
-            LatestCurrencyResponse latestCurrencyResponse = currencyService.//TODO добавить метод  ;
-            for (String key : latestCurrencyResponse.getRates().keySet()) {
-                System.out.printf("%s: %.4f\n", key, latestCurrencyResponse.getRates().get(key));
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+//    private void exchangeHistoryAction() {
+//        System.out.println("Курс валют");
+//        try {
+//            LatestCurrencyResponse latestCurrencyResponse = currencyService.getExchangeCourse();//TODO передлать на историю всех валют
+//            for (String key : latestCurrencyResponse.getRates().keySet()) {
+//                System.out.printf("%s: %.4f\n", key, latestCurrencyResponse.getRates().get(key));
+//            }
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     private void closeAccountAction() {
         System.out.println("Какой счёт вы хотите закрыть?");
@@ -300,8 +302,10 @@ public class Menu {
 
     private void addNewCurrency() {
         System.out.println("Добавить новую валюту:");
-        String addCur = scanner.nextLine();
-        currencyService.addCurrency(addCur);
+        String addCur1 = scanner.nextLine();
+        String addCur2 = scanner.nextLine();
+        double addCur3 = scanner.nextDouble();
+        currencyService.addNewCurrency(addCur1, addCur2, addCur3);//TODO что писать при джобавление валюты
         System.out.println("Успешно добавлена!");
     }
 
@@ -329,13 +333,14 @@ public class Menu {
         int accountId = scanner.nextInt();
         return bankAccounts.get(accountId);
     }
-}
 
+    public static void main(String[] args) {
+        Menu menu1 = new Menu();
+        menu1.run();
 
-//    public static void main(String[] args) {
 //        CurrencyNetworkWorker worker = new CurrencyNetworkWorker();
 //        try {
-//            LatestCurrencyResponse latestCurrencyResponse = new LatestCurrencyResponse();
+//            LatestCurrencyResponse latestCurrencyResponse = worker.requestLatestCurrency();
 //            for (String key: latestCurrencyResponse.getRates().keySet()) {
 //                System.out.printf("%s: %.4f\n", key, latestCurrencyResponse.getRates().get(key));
 //            }
@@ -347,4 +352,11 @@ public class Menu {
 //        } catch (Exception e) {
 //            e.printStackTrace();
 //        }
-//    }
+
+    }
+
+
+}
+
+
+
