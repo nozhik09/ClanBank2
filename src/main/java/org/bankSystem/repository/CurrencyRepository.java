@@ -3,15 +3,18 @@ package org.bankSystem.repository;
 
 import org.bankSystem.model.Course;
 import org.bankSystem.model.Currency;
+import org.bankSystem.network.CurrencyNetworkWorker;
+import org.bankSystem.network.LatestCurrencyResponse;
 
 import java.io.*;
+import java.time.LocalDate;
 import java.util.*;
 
 public class CurrencyRepository {
 
     private Map<Currency, Course> courseMap = new HashMap<>();
     private Set<Currency> setCurrency = new HashSet<>();
-    String path = "src/repository/CurrencyChangeList.txt";
+    String path = "src/main/java/org/bankSystem/repository/CurrencyChangeList.txt";
     String listOfAvailableCurrencies = "src/repository/listOfAvailableCurrencies.txt";
 
 
@@ -44,7 +47,7 @@ public class CurrencyRepository {
     }
 
     // Добавление новой валюты +//TODO Добавлять в TXT?
-    public Currency addNewCurrency(String name, String code , Double rate) {
+    public Currency addNewCurrency(String name, String code, Double rate) {
         Currency currency = new Currency(name, code);
         setCurrency.add(currency);
         courseMap.put(currency, new Course(rate));
@@ -60,29 +63,41 @@ public class CurrencyRepository {
     }
 
 
-public Map<Currency, Course> changeCourseRate(String code, Double newRate) {
-    Currency currency = null;
-    for (Currency c : setCurrency) {
-        if (c.getCode().equals(code)) {
-            currency = c;
-            break;
+    public Map<Currency, Course> changeCourseRate(String code, Double newRate) {
+        Currency currency = null;
+        for (Currency c : setCurrency) {
+            if (c.getCode().equals(code)) {
+                currency = c;
+                break;
+            }
+        }
+        Course course = courseMap.get(currency);
+        course.setCourse(newRate);
+        courseMap.put(currency, course);
+        writeToFile(currency, course);
+        return courseMap;
+    }
+
+    public void writeTo() {
+        CurrencyNetworkWorker worker = new CurrencyNetworkWorker();
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(path, true))){
+            LatestCurrencyResponse latestCurrencyResponse = worker.requestLatestCurrency();
+            for (String key : latestCurrencyResponse.getRates().keySet()) {
+                System.out.printf("%s: %.4f\n", key, latestCurrencyResponse.getRates().get(key));
+                bufferedWriter.write(key + " : " + latestCurrencyResponse.getRates().get(key) +": " + LocalDate.now());
+                bufferedWriter.newLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
-    Course course = courseMap.get(currency);
-    course.setCourse(newRate);
-    courseMap.put(currency, course);
-    writeToFile(currency,course);
-    return courseMap;
-}
 
 
-
-
-
-
-    private void writeToFile(Currency currency , Course course) {
+    private void writeToFile(Currency currency, Course course) {
         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(path, true))) {
-            bufferedWriter.write(currency.getCode()+": " + course.getCourse()+" Date: " + course.getLocalDate());
+            bufferedWriter.write(currency.getCode() + ": " + course.getCourse() + " Date: " + course.getLocalDate());
             bufferedWriter.newLine();
 
 
@@ -90,6 +105,7 @@ public Map<Currency, Course> changeCourseRate(String code, Double newRate) {
             e.printStackTrace();
         }
     }
+
     public void readFromFile() {
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(path))) {
             String line;
@@ -100,13 +116,14 @@ public Map<Currency, Course> changeCourseRate(String code, Double newRate) {
             e.printStackTrace();
         }
     }
-    public void readFromFileByCurrency(String code){
+
+    public void readFromFileByCurrency(String code) {
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(path))) {
             String line;
 
             while ((line = bufferedReader.readLine()) != null) {
                 if (line.contains(code))
-                System.out.println(line);
+                    System.out.println(line);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -114,7 +131,8 @@ public Map<Currency, Course> changeCourseRate(String code, Double newRate) {
 
 
     }
-    public void readFromFileByDate(String data){
+
+    public void readFromFileByDate(String data) {
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(path))) {
             String line;
 
@@ -128,23 +146,19 @@ public Map<Currency, Course> changeCourseRate(String code, Double newRate) {
 
 
     }
-    public  Currency getCurrencyByCode (String code){
-        Currency currency = new Currency("US Dolar",code);
+
+    public Currency getCurrencyByCode(String code) {
+        Currency currency = new Currency("US Dolar", code);
         for (Currency c : setCurrency) {
             if (c.getCode().equals(code)) {
                 currency = c;
-         return currency;
+                return currency;
 
             }
         }
         return null;
 
     }
-
-
-
-
-
 
 
 }
