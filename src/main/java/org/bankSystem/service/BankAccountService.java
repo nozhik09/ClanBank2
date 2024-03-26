@@ -115,14 +115,14 @@ public class BankAccountService {
     }
 
 
-    public void closeAccount(int accountId) {
+    public boolean closeAccount(int accountId) {
         Optional<BankAccount> account = bankAccountRepository.getBankAccountById(accountId);
-        account.ifPresentOrElse(acc -> {
+        return account.map(acc -> {
             bankAccountRepository.deleteBankAccount(accountId);
             int operationId = operationService.generateOperationId();
             operationService.recordOperation(new Operations(operationId, 0, acc.getCurrency().getCode(), accountId, Operations.TypeOperation.CLOSE_ACCOUNT));
-            System.out.println("Счет закрыт.");
-        }, () -> System.out.println("Счет не найден."));
+            return true;
+        }).orElse(false);
     }
 
 

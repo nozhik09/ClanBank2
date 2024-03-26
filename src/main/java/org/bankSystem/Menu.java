@@ -216,14 +216,36 @@ public class Menu {
     private void openAccountAction() {
         System.out.print("Введите название валюты: ");
         String title = scanner.nextLine();
-        //Стартовый баланс передавать не нужно, так как он всегда открывается с 0 деняг!!!
         bankAccountService.openAccount(user.getId(), title, 0);
         System.out.println("Валюта успешно добавленна!");
     }
 
     private void checkBalanceAction() {
-        System.out.println("Ваш баланс по следующим валютам:");
-        BankAccount bankAccount = choseBankAccount();
+        System.out.println("Введите номер счета, по которому вы хотите увидеть баланс:");
+        List<BankAccount> bankAccounts = user.getBankAccounts();
+        if (bankAccounts.isEmpty()) {
+            System.out.println("У вас нет банковских счетов.");
+            return;
+        }
+
+        while (!scanner.hasNextInt()) {
+            System.out.println("Пожалуйста, введите числовой номер счета.");
+            scanner.next();
+        }
+        int accountNumber = scanner.nextInt();
+
+        if (accountNumber < 1 || accountNumber > bankAccounts.size()) {
+            System.out.println("Некорректный номер счета. Пожалуйста, попробуйте снова.");
+            return;
+        }
+
+        BankAccount selectedAccount = bankAccounts.get(accountNumber - 1);
+        if (selectedAccount != null) {
+
+            System.out.printf("Доступный баланс на счете: %.2f %s\n", selectedAccount.getBalance(), selectedAccount.getCurrency().getCode());
+        } else {
+            System.out.println("Ошибка: Не удалось получить информацию по выбранному счету.");
+        }
     }
 
     private void depositAction() {
@@ -286,10 +308,21 @@ public class Menu {
     }
 
     private void closeAccountAction() {
-        System.out.println("Какой счёт вы хотите закрыть?");
-        BankAccount bankAccount = choseBankAccount();
-        bankAccountService.closeAccount(bankAccount.getAccountId());
-        System.out.println("Счёт успешно закрыт!");
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Введите ID счета, который вы хотите закрыть:");
+        while (!scanner.hasNextInt()) {
+            System.out.println("Пожалуйста, введите корректный числовой ID счета.");
+            scanner.next();
+        }
+        int accountId = scanner.nextInt();
+
+        boolean isClosed = bankAccountService.closeAccount(accountId);
+        if (isClosed) {
+            System.out.println("Счет с ID " + accountId + " успешно закрыт.");
+        } else {
+            System.out.println("Счет с таким ID не найден.");
+        }
     }
 
     private void checkAllAccountsAction() {
