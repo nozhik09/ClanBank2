@@ -7,7 +7,6 @@ import org.bankSystem.network.LatestCurrencyResponse;
 import org.bankSystem.repository.CurrencyRepository;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -30,11 +29,11 @@ public class CurrencyService {
     }
 
     // метод добаления новой валюты для АДМИНА
-    public Currency addNewCurrency(String code, String name, double rate) {
+    public Currency addNewCurrency(String name, String code, double rate) {
         if (code == null || name == null || code.isEmpty() || name.isEmpty())
             throw new RuntimeException("Код валюты и наименование валюты должно быть заполнено");
         if (rate <= 0) throw new RuntimeException("Курс валюты не может быть меньше 0 ");
-        ;
+
         return currencyRepository.addNewCurrency(name, code, rate);
     }
 
@@ -45,7 +44,7 @@ public class CurrencyService {
 
 
     //    изменение курса валюты ДЛЯ АДМИНА
-    public Map<Currency, Course> changeCurrencyRate(String code, Double newRate) {
+    public Map<String, Double> changeCurrencyRate(String code, Double newRate) {
         if (newRate <= 0) throw new RuntimeException("Не корректный курс ");
         return currencyRepository.changeCourseRate(code, newRate);
     }
@@ -84,27 +83,19 @@ public class CurrencyService {
 
 
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
     public void writeToFile(){
         currencyRepository.writeTo();
     }
 
-    public void checksAboutCode(String code){
+    public void checksAboutCodeOrDate(String code){
+        if (code==null||code.isEmpty()) return;
         currencyRepository.readFromFileByCurrency(code);
+
+
+    }
+    public void checkAllHistory(){
+        currencyRepository.readFromFile();
+
 
     }
 
