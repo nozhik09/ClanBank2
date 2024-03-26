@@ -73,6 +73,18 @@ public class CurrencyService {
         return 0;
     }
 
+    public void writeToFile(){
+        currencyRepository.writeTo();
+    }
+
+    public void checksAboutCode(String code){
+        currencyRepository.readFromFileByCurrency(code);
+
+    }
+
+
+
+
 }
 
 
