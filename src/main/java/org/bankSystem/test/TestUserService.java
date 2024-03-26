@@ -189,6 +189,18 @@ public class TestUserService {
         assertNotNull(result);
         assertEquals(3, result.size()); // Проверяем, что список содержит банковскиe счеta
     }
+    @Test
+    void testChangeUserRole() {
 
+        Users user = new Users(555, "test", "test@example.com", "Password!!!&", Role.USER, new ArrayList<>());
+        userRepository.addUser(user);
+
+        assertEquals(Role.USER, userRepository.getUserById(555).getRole());
+
+        userService.changeRole(555, Role.ADMIN);
+
+        // Проверяем, что роль пользователя изменилась на ADMIN
+        assertEquals(Role.ADMIN, userService.getUserById(555).getRole());
+    }
 
 }
