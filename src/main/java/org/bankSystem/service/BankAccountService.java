@@ -9,12 +9,14 @@ import org.bankSystem.repository.BankAccountRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class BankAccountService {
     private BankAccountRepository bankAccountRepository;
     private UserService userService;
     private CurrencyService currencyService;
     private OperationService operationService;
+
 
     public BankAccountService(BankAccountRepository bankAccountRepository, UserService userService, CurrencyService currencyService, OperationService operationService) {
         this.bankAccountRepository = bankAccountRepository;
@@ -37,21 +39,13 @@ public class BankAccountService {
             return;
         }
 
-        int accountId = generateUniqueAccountId();
+        int accountId = bankAccountRepository.generateNewAccountId();
         BankAccount newAccount = new BankAccount(initialBalance, accountId, user, currency);
         user.getBankAccounts().add(newAccount); // Привязываем счет к пользователю
         bankAccountRepository.addBankAccount(newAccount);
         System.out.println("Новый счет успешно создан для пользователя с ID: " + userId);
     }
 
-    // Вспомогательный метод для генерации уникального ID счета
-    private int generateUniqueAccountId() {
-        int accountId = bankAccountRepository.getAllBankAccounts().size() + 1;
-        while (bankAccountRepository.getBankAccountById(accountId).isPresent()) {
-            accountId++;
-        }
-        return accountId;
-    }
 
     public void deposit(int accountId, double amount) {
         Optional<BankAccount> account = bankAccountRepository.getBankAccountById(accountId);
@@ -79,24 +73,47 @@ public class BankAccountService {
         }, () -> System.out.println("Счет не найден."));
     }
 
-    public void exchangeCurrency(int accountId, String targetCurrencyCode, double amount) {
-        Optional<BankAccount> accountOpt = bankAccountRepository.getBankAccountById(accountId);
-        accountOpt.ifPresentOrElse(account -> {
-            double exchangeRate = currencyService.getExchangeCourse(targetCurrencyCode);
-            double convertedAmount = amount * exchangeRate;
+    public void exchangeCurrency(int accountId, String sourceCurrencyCode, String targetCurrencyCode, double amount) {
+        BankAccount sourceAccount = bankAccountRepository.getBankAccountById(accountId)
+                .orElseThrow(() -> new RuntimeException("Счет не найден."));
 
-            if (account.getBalance() >= amount) {
-                account.setBalance(account.getBalance() - amount); // Снимаем сумму в исходной валюте
-                // Здесь может быть необходимо добавить сумму в целевой валюте, если учет ведется отдельно
-                bankAccountRepository.updateBankAccount(account);
-                int operationId = operationService.generateOperationId();
-                operationService.recordOperation(new Operations(operationId, -amount, account.getCurrency().getCode(), accountId, Operations.TypeOperation.EXCHANGE));
-                System.out.println("Обмен выполнен. Снято " + amount + " " + account.getCurrency().getCode() + ", добавлено " + convertedAmount + " " + targetCurrencyCode + ".");
-            } else {
-                System.out.println("Недостаточно средств для обмена.");
-            }
-        }, () -> System.out.println("Счет не найден."));
+        if (!sourceAccount.getCurrency().getCode().equals(sourceCurrencyCode)) {
+            throw new RuntimeException("Валюта счета не соответствует указанной валюте для обмена.");
+        }
+
+        if (sourceAccount.getBalance() < amount) {
+            throw new RuntimeException("Недостаточно средств на счете для обмена.");
+        }
+
+        double exchangeRate = currencyService.getExchangeCourse(sourceCurrencyCode, targetCurrencyCode);
+//        if (exchangeRate <= 0) {
+//            throw new RuntimeException("Невозможно получить курс обмена для указанных валют.");
+//        }
+
+        double convertedAmount = amount * exchangeRate;
+        sourceAccount.setBalance(sourceAccount.getBalance() - amount);
+        bankAccountRepository.updateBankAccount(sourceAccount);
+
+        BankAccount targetAccount = bankAccountRepository.getBankAccountByUserIdAndCurrency(sourceAccount.getUsers().getId(), targetCurrencyCode)
+                .orElseGet(() -> createNewBankAccount(sourceAccount, targetCurrencyCode, convertedAmount));
+
+        targetAccount.setBalance(targetAccount.getBalance() + convertedAmount);
+        bankAccountRepository.updateBankAccount(targetAccount);
+
+        System.out.println(String.format("Обмен выполнен. Снято %f %s, добавлено %f %s.", amount, sourceCurrencyCode, convertedAmount, targetCurrencyCode));
     }
+
+    private BankAccount createNewBankAccount(BankAccount sourceAccount, String targetCurrencyCode, double initialBalance) {
+        Currency targetCurrency = currencyService.getCurrencyByCode(targetCurrencyCode);
+        if (targetCurrency == null) {
+            throw new RuntimeException("Валюта с кодом " + targetCurrencyCode + " не найдена.");
+        }
+
+        BankAccount newAccount = new BankAccount(initialBalance, bankAccountRepository.generateNewAccountId(), sourceAccount.getUsers(), targetCurrency);
+        bankAccountRepository.addBankAccount(newAccount);
+        return newAccount;
+    }
+
 
     public void closeAccount(int accountId) {
         Optional<BankAccount> account = bankAccountRepository.getBankAccountById(accountId);
