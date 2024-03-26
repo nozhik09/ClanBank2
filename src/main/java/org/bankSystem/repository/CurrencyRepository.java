@@ -30,11 +30,17 @@ public class CurrencyRepository {
     public void allAvailableCurrencies() {
         setCurrency.add(new Currency("Euro", "EUR"));
         setCurrency.add(new Currency("American Dollar", "USD"));
+        setCurrency.add(new Currency("", "AUD"));
+        setCurrency.add(new Currency("", "BGN"));
+        setCurrency.add(new Currency("", "BRL"));
+        setCurrency.add(new Currency("", "CAD"));
+        setCurrency.add(new Currency("", "CHF"));
+
     }
 
     public void setCourseMap() {
-        courseMap.put("EUR", 14.5);
-        courseMap.put("USD", 14.4);
+        courseMap.put("EUR", 1.0);
+        courseMap.put("USD", 1.08);
     }
 
 
@@ -62,7 +68,6 @@ public class CurrencyRepository {
         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(path, true))) {
             LatestCurrencyResponse latestCurrencyResponse = worker.requestLatestCurrency();
             for (String key : latestCurrencyResponse.getRates().keySet()) {
-                System.out.printf("%s: %.4f\n", key, latestCurrencyResponse.getRates().get(key));
                 bufferedWriter.write(key + " : " + latestCurrencyResponse.getRates().get(key) + " Date:" + LocalDate.now());
                 bufferedWriter.newLine();
             }
@@ -166,6 +171,10 @@ public class CurrencyRepository {
             }
         }
         return null;
+
+//        courseMap.keySet().contains(code);
+
+
 
 
     }

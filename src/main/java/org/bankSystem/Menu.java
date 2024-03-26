@@ -2,13 +2,16 @@ package org.bankSystem;
 
 
 import org.bankSystem.model.BankAccount;
+import org.bankSystem.model.Role;
 import org.bankSystem.model.Users;
+import org.bankSystem.network.CurrencyNetworkWorker;
+import org.bankSystem.network.LatestCurrencyResponse;
 import org.bankSystem.repository.BankAccountRepository;
-import org.bankSystem.repository.CurrencyRepository;
 import org.bankSystem.repository.UsersRepository;
 import org.bankSystem.service.*;
 import org.bankSystem.util.MyLinkedList;
 
+import java.io.IOException;
 import java.util.*;
 
 
@@ -21,13 +24,14 @@ public class Menu {
         DEPOSIT("Пополнение счёта"),
         WITHDRAW("Снятие средств"),
         EXCHANGE_CURRENCY("Обмен валюты"),
-        PRINT_ACCOUNT_OPERATION("История транзакций"),
+        TRANS_HISTORY("История транзакций"),
         CLOSE_ACCOUNT("Закрытие счёта"),
         EXCHANGE_HISTORY("История курса валют"),
         ADD_NEW_CURRENCY("Добавить новую валюту"),
         CHECK_ALL_ACCOUNTS("Просмотр всех счетов"),
         CHANGES_EXCHANGE("Изменение курса валют"),
         EXCHANGE_ROLE("Изменение роли"),
+        ACTUAL_RATE("Текущий курс на сегодня"),
         EXIT("Выход");
 
 
@@ -89,47 +93,59 @@ public class Menu {
         switch (menuItem) {
             case AUTORIZE:
                 loginAction();
+                scanner.nextLine();
                 break;
             case REGISTRATION:
                 registerAction();
+                scanner.nextLine();
                 break;
             case OPEN_ACCOUNT:
                 openAccountAction();
+                scanner.nextLine();
                 break;
             case CHECK_BALANCE:
                 checkBalanceAction();
+                scanner.nextLine();
                 break;
             case DEPOSIT:
                 depositAction();
+                scanner.nextLine();
                 break;
             case WITHDRAW:
                 withdrawAction();
+                scanner.nextLine();
+                break;
+            case ACTUAL_RATE:
+                actualRate();
+                scanner.nextLine();
                 break;
             case EXCHANGE_CURRENCY:
                 exchangeCurrencyAction();
-                break;
-            case PRINT_ACCOUNT_OPERATION:
-                printAccountOperationsAction();
+                scanner.nextLine();
                 break;
             case CLOSE_ACCOUNT:
                 closeAccountAction();
+                scanner.nextLine();
                 break;
             case EXCHANGE_HISTORY:
                 exchangeHistoryAction();
+                scanner.nextLine();
                 break;
             case ADD_NEW_CURRENCY:
                 addNewCurrency();
+                scanner.nextLine();
                 break;
             case CHANGES_EXCHANGE:
                 changesExchange();
+                scanner.nextLine();
                 break;
-            case CHECK_ALL_ACCOUNTS:
-
+            case TRANS_HISTORY:
+                transHistory();
                 break;
             case EXCHANGE_ROLE:
-
+                changeRole();
+                scanner.nextLine();
                 break;
-
             case EXIT:
                 exitAction();
                 break;
@@ -152,9 +168,10 @@ public class Menu {
                 MenuItem.CHECK_BALANCE,
                 MenuItem.DEPOSIT,
                 MenuItem.WITHDRAW,
+                MenuItem.ACTUAL_RATE,
                 MenuItem.EXCHANGE_CURRENCY,
                 MenuItem.EXCHANGE_HISTORY,
-                MenuItem.PRINT_ACCOUNT_OPERATION,
+                MenuItem.TRANS_HISTORY,
                 MenuItem.CLOSE_ACCOUNT,
                 MenuItem.EXIT);
     }
@@ -164,7 +181,7 @@ public class Menu {
         menu.addAll(
                 MenuItem.ADD_NEW_CURRENCY,
                 MenuItem.CHANGES_EXCHANGE,
-                MenuItem.CHECK_ALL_ACCOUNTS,
+                MenuItem.EXCHANGE_ROLE,
                 MenuItem.EXIT);
     }
 
@@ -222,8 +239,31 @@ public class Menu {
     }
 
     private void checkBalanceAction() {
-        System.out.println("Ваш баланс по следующим валютам:");
-        BankAccount bankAccount = choseBankAccount();
+        System.out.println("Введите номер счета, по которому вы хотите увидеть баланс:");
+        List<BankAccount> bankAccounts = user.getBankAccounts();
+        if (bankAccounts.isEmpty()) {
+            System.out.println("У вас нет банковских счетов.");
+            return;
+        }
+
+        while (!scanner.hasNextInt()) {
+            System.out.println("Пожалуйста, введите числовой номер счета.");
+            scanner.next();
+        }
+        int accountNumber = scanner.nextInt();
+
+        if (accountNumber < 1 || accountNumber > bankAccounts.size()) {
+            System.out.println("Некорректный номер счета. Пожалуйста, попробуйте снова.");
+            return;
+        }
+
+        BankAccount selectedAccount = bankAccounts.get(accountNumber - 1);
+        if (selectedAccount != null) {
+
+            System.out.printf("Доступный баланс на счете: %.2f %s\n", selectedAccount.getBalance(), selectedAccount.getCurrency().getCode());
+        } else {
+            System.out.println("Ошибка: Не удалось получить информацию по выбранному счету.");
+        }
     }
 
     private void depositAction() {
@@ -241,7 +281,24 @@ public class Menu {
         System.out.println("Сколько вы хотите вывести деняг?");
         double amount = scanner.nextDouble();
         bankAccountService.withdraw(bankAccount.getAccountId(), amount);
-        System.out.println("Деньги успешно выведенны!");
+        System.out.println("Деньги успешно выведены!");
+    }
+    private void actualRate() {
+        System.out.println("Актуальный курс валют на сегодня: ");
+        currencyService.actualRate();
+        CurrencyNetworkWorker worker = new CurrencyNetworkWorker();
+        try {
+            LatestCurrencyResponse latestCurrencyResponse = worker.requestLatestCurrency();
+            for (String key : latestCurrencyResponse.getRates().keySet()) {
+                System.out.printf("%s: %.4f\n", key, latestCurrencyResponse.getRates().get(key));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+
     }
 
 
@@ -277,32 +334,29 @@ public class Menu {
         bankAccountService.printAccountOperation(bankAccount.getAccountId());
     }
 
-    private void exchangeHistoryAction() {//TODO изменил!
+    private void exchangeHistoryAction() {
         System.out.println("Курс валют за весь период");
         currencyService.checkAllHistory();
         System.out.println("Отсортировать валюту по коду или дате?");
         currencyService.checksAboutCodeOrDate(scanner.nextLine());
-
     }
 
     private void closeAccountAction() {
-        System.out.println("Какой счёт вы хотите закрыть?");
-        BankAccount bankAccount = choseBankAccount();
-        bankAccountService.closeAccount(bankAccount.getAccountId());
-        System.out.println("Счёт успешно закрыт!");
-    }
+        Scanner scanner = new Scanner(System.in);
 
-    private void checkAllAccountsAction() {
-        System.out.println("Проверить транзакции всех аккаунтов");
-        //Воздух
+        System.out.println("Введите ID счета, который вы хотите закрыть:");
+        while (!scanner.hasNextInt()) {
+            System.out.println("Пожалуйста, введите корректный числовой ID счета.");
+            scanner.next();
+        }
+        int accountId = scanner.nextInt();
 
-    }
-
-    private void checkAllOperationsAction() {
-        System.out.println("Проверить операции всех аккаунтов");
-        //Воздух
-
-
+        boolean isClosed = bankAccountService.closeAccount(accountId);
+        if (isClosed) {
+            System.out.println("Заявка на закрытия счета с ID " + accountId + " передана администратору.");
+        } else {
+            System.out.println("Счет с таким ID не найден.");
+        }
     }
 
     private void addNewCurrency() { //TODO ТУТ ИЗМЕНИЛ
@@ -317,10 +371,15 @@ public class Menu {
         System.out.println("Успешно добавлена!");
     }
 
-    private void changesExchange() { //TODO Добавил метод, лучше который просто обновляет список вал
-        currencyService.changeCurrencyRate(scanner.nextLine(), scanner.nextDouble());
+    private void changesExchange() {
+        System.out.println("Введите валюту которую хотите изменить");
+        String code = scanner.nextLine();
+        System.out.println("Введите новый курс");
+        Double rate = scanner.nextDouble();
+        currencyService.changeCurrencyRate(code, rate);
         //Воздух
     }
+
 
     private void issueAdmin() {
 
@@ -352,29 +411,23 @@ public class Menu {
         }
         return bankAccounts.get(accountIndex);
     }
-
-
-    public static void main(String[] args) {
-        CurrencyRepository currencyRepository = new CurrencyRepository();
-        currencyRepository.writeTo();
-        System.out.println(currencyRepository.getCourseMap());
-//        System.out.println(currencyRepository.getCourseMap());
-        Menu menu1 = new Menu();
-        menu1.run();
-//        CurrencyNetworkWorker worker = new CurrencyNetworkWorker();
-//        try {
-//            LatestCurrencyResponse latestCurrencyResponse = worker.requestLatestCurrency();
-//            for (String key: latestCurrencyResponse.getRates().keySet()) {
-//                System.out.printf("%s: %.4f\n", key, latestCurrencyResponse.getRates().get(key));
-//            }
-//
-//            Scanner scanner = new Scanner(System.in);
-//            System.out.println("Currency code:");
-//            String code = scanner.nextLine();
-//            System.out.printf("%s: %.4f\n", code, latestCurrencyResponse.getRates().get(code));
-//        } catch (Exception e) {
-//            e.printStackTrace();
+    private void changeRole() {
+        System.out.print("Введите Email: ");
+        String email = scanner.nextLine();
+        int userId = userService.getUserByEmail(email).getId();
+        System.out.print("Введите Role(ADMIN или USER): ");
+        String role = scanner.nextLine();
+        userService.changeRole(userId, Role.valueOf(role));
+        System.out.println("Теперь пользователь с Е-малом: " + email + " с ID: "
+                + userId + " Имеет роль: " + userService.getUserById(userId).getRole());
     }
+    private void transHistory(){
+        System.out.println("История транзакций выслана вам голубиной почтой. Спасибо что остаетесь с нами:)");
+    }
+
+
+
+
 
 }
 
