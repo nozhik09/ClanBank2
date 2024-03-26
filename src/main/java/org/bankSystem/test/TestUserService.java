@@ -5,12 +5,8 @@
 package org.bankSystem.test;
 
 
+import org.bankSystem.model.*;
 
-import org.bankSystem.model.BankAccount;
-import org.bankSystem.model.Currency;
-
-import org.bankSystem.model.Role;
-import org.bankSystem.model.Users;
 import org.bankSystem.repository.BankAccountRepository;
 import org.bankSystem.repository.CurrencyRepository;
 import org.bankSystem.repository.UsersRepository;
@@ -20,6 +16,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -32,12 +30,14 @@ public class TestUserService {
     private CurrencyService currencyService;
     private OperationService operationService;
 
+
     @BeforeEach
     void setUp() {
         bankAccountRepository = new BankAccountRepository();
-        bankAccountService = new BankAccountService(bankAccountRepository, userService, currencyService,operationService);
+        bankAccountService = new BankAccountService(bankAccountRepository, userService, currencyService, operationService);
         userRepository = new UsersRepository();
         userService = new UserService(userRepository, bankAccountRepository);
+        currencyService = new CurrencyService();
     }
 
     //тест на поиск по емаилу
@@ -190,5 +190,50 @@ public class TestUserService {
         assertEquals(3, result.size()); // Проверяем, что список содержит банковскиe счеta
     }
 
+    @Test
+    void testGetAllCurrency() {
+        Set<Currency> currencies = currencyService.getAllCurrency();
+        assertNotNull(currencies);
+        assertFalse(currencies.isEmpty());
+    }
+    @Test
+    void testAddNewCurrency() {
+        Currency newCurrency = currencyService.addNewCurrency("JPY", "Ejena", 163.7800);
+        assertNotNull(newCurrency);
+        assertEquals("JPY", newCurrency.getCode());
+        assertEquals("Ejena", newCurrency.getName());
+        assertEquals(163.7800, currencyService.getExchangeCourse(newCurrency.getCode()));
+    }
+
+
+
+    @Test
+    void testRemoveCurrency() {
+        Currency removedCurrency = currencyService.removeCurrency("US Dollar", "USD");
+        assertNotNull(removedCurrency);
+        assertEquals("USD", removedCurrency.getCode());
+        assertEquals("US Dollar", removedCurrency.getName());
+        assertEquals(1.0835, currencyService.getExchangeCourse(removedCurrency.getCode()));
+    }
+
+
+    @Test
+    void testGetCurrencyByCode() {
+        Currency currency = currencyService.getCurrencyByCode("USD");
+        assertNotNull(currency);
+        assertEquals("USD", currency.getCode());
+        assertEquals("American Dollar", currency.getName());
+        assertEquals(1.0835, currencyService.getExchangeCourse(currency.getCode()));
+    }
+
+    @Test
+    void testGetExchangeCourse() {
+        double exchangeRate = currencyService.getExchangeCourse("CAD");
+        assertEquals(1.4722, exchangeRate);
+    }
+
 
 }
+
+
+
