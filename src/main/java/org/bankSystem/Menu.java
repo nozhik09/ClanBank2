@@ -237,7 +237,7 @@ public class Menu {
         BankAccount bankAccount = choseBankAccount();
         System.out.println("Сколько хотите внести денег: ");
         double amount = scanner.nextDouble();
-        bankAccountService.deposit(bankAccount.getId(), amount);
+        bankAccountService.deposit(bankAccount.getAccountId(), amount);
         System.out.println("Счёт успешно пополнен");
     }
 
@@ -246,25 +246,41 @@ public class Menu {
         BankAccount bankAccount = choseBankAccount();
         System.out.println("Сколько вы хотите вывести деняг?");
         double amount = scanner.nextDouble();
-        bankAccountService.withdraw(bankAccount.getId(), amount);
+        bankAccountService.withdraw(bankAccount.getAccountId(), amount);
         System.out.println("Деньги успешно выведенны!");
     }
 
 
     private void exchangeCurrencyAction() {
-        System.out.println("Какую валюту вы хотите обменять?");
+        System.out.println("Выберите счет, с которого хотите обменять валюту:");
         BankAccount bankAccount = choseBankAccount();
-        System.out.println("Сколько вы хотите обменять??");
+        if (bankAccount == null) {
+            System.out.println("Неверный выбор счета.");
+            return;
+        }
+
+        System.out.println("Вы выбрали счет в валюте " + bankAccount.getCurrency().getCode() + ". Сколько вы хотите обменять?");
         double amount = scanner.nextDouble();
-        bankAccountService.exchangeCurrency(bankAccount.getId(), bankAccount.getCurrency().getCode(), amount);
-        System.out.println("Вы успешно обменяли деньги!");
+
+
+        System.out.println("На какую валюту вы хотите обменять? Введите код валюты:");
+        scanner.nextLine();
+        String targetCurrencyCode = scanner.nextLine();
+
+        if (bankAccount.getCurrency().getCode().equalsIgnoreCase(targetCurrencyCode)) {
+            System.out.println("Исходная и целевая валюты совпадают. Обмен не требуется.");
+            return;
+        }
+
+        bankAccountService.exchangeCurrency(bankAccount.getAccountId(), bankAccount.getCurrency().getCode(), targetCurrencyCode, amount);
+        System.out.println("Запрос на обмен валюты отправлен.");
     }
 
-    private void printAccountOperationsAction() {
+    private void printAccountOperationsAction() { // TODO добавить проверку на ноль.
         System.out.println("Выберите счёт для просмотра транзакций: ");
         BankAccount bankAccount = choseBankAccount();
         System.out.println("История Транзацкий: ");
-        bankAccountService.printAccountOperation(bankAccount.getId());
+        bankAccountService.printAccountOperation(bankAccount.getAccountId());
     }
 
 //    private void exchangeHistoryAction() {
@@ -283,7 +299,7 @@ public class Menu {
     private void closeAccountAction() {
         System.out.println("Какой счёт вы хотите закрыть?");
         BankAccount bankAccount = choseBankAccount();
-        bankAccountService.closeAccount(bankAccount.getId());
+        bankAccountService.closeAccount(bankAccount.getAccountId());
         System.out.println("Счёт успешно закрыт!");
     }
 
@@ -324,14 +340,26 @@ public class Menu {
 
     private BankAccount choseBankAccount() {
         List<BankAccount> bankAccounts = user.getBankAccounts();
-        for (BankAccount bankAccount : bankAccounts) {
-            int id = bankAccount.getId();
-            double balance = bankAccount.getBalance();
-            String code = bankAccount.getCurrency().getCode();
-            System.out.printf("%d: %f %s\n", id, balance, code);
+        if (bankAccounts.isEmpty()) {
+            System.out.println("У вас нет банковских счетов.");
+            return null;
         }
-        int accountId = scanner.nextInt();
-        return bankAccounts.get(accountId);
+
+        for (int i = 0; i < bankAccounts.size(); i++) {
+            BankAccount bankAccount = bankAccounts.get(i);
+            System.out.printf("%d: %.2f %s\n", i + 1, bankAccount.getBalance(), bankAccount.getCurrency().getCode());
+        }
+
+        System.out.println("Введите номер счета:");
+
+         int accountIndex = scanner.nextInt()-1;
+
+        if (accountIndex < 0 || accountIndex >= bankAccounts.size()) {
+            System.out.println("Некорректный номер счета. Пожалуйста, попробуйте снова.");
+            return null;
+        }
+
+        return bankAccounts.get(accountIndex);
     }
 
     public static void main(String[] args) {

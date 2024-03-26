@@ -1,5 +1,6 @@
 package org.example;
 
+import org.bankSystem.Menu;
 import org.bankSystem.network.CurrencyNetworkWorker;
 import org.bankSystem.network.LatestCurrencyResponse;
 
@@ -11,6 +12,9 @@ public class Main {
 
 
     public static void main(String[] args) {
+            Menu menu1 = new Menu();
+            menu1.run();
+
 
 //        CurrencyNetworkWorker worker = new CurrencyNetworkWorker();
 //        try {
@@ -26,6 +30,6 @@ public class Main {
 //        } catch (Exception e) {
 //            e.printStackTrace();
 //        }
-
-    }
+//
+   }
 }
