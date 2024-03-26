@@ -1,6 +1,5 @@
 package org.bankSystem.service;
 
-import org.bankSystem.model.Course;
 import org.bankSystem.model.Currency;
 import org.bankSystem.network.CurrencyNetworkWorker;
 import org.bankSystem.network.LatestCurrencyResponse;
@@ -73,7 +72,7 @@ public class CurrencyService {
                 return 0;
             }
 
-            return targetRate - sourceRate;
+            return sourceRate - targetRate*-1;
 
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
@@ -97,6 +96,9 @@ public class CurrencyService {
         currencyRepository.readFromFile();
 
 
+    }
+    public void actualRate(){
+        currencyRepository.writeTo();
     }
 
 }

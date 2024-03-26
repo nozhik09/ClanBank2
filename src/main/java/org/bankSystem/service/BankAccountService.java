@@ -16,6 +16,7 @@ public class BankAccountService {
     private UserService userService;
     private CurrencyService currencyService;
     private OperationService operationService;
+    private final AtomicInteger currentId = new AtomicInteger(1);
 
 
     public BankAccountService(BankAccountRepository bankAccountRepository, UserService userService, CurrencyService currencyService, OperationService operationService) {
@@ -114,15 +115,14 @@ public class BankAccountService {
         return newAccount;
     }
 
-
-    public void closeAccount(int accountId) {
+    public boolean closeAccount(int accountId) {
         Optional<BankAccount> account = bankAccountRepository.getBankAccountById(accountId);
-        account.ifPresentOrElse(acc -> {
+        return account.map(acc -> {
             bankAccountRepository.deleteBankAccount(accountId);
             int operationId = operationService.generateOperationId();
             operationService.recordOperation(new Operations(operationId, 0, acc.getCurrency().getCode(), accountId, Operations.TypeOperation.CLOSE_ACCOUNT));
-            System.out.println("Счет закрыт.");
-        }, () -> System.out.println("Счет не найден."));
+            return true;
+        }).orElse(false);
     }
 
 
@@ -168,4 +168,7 @@ public class BankAccountService {
             System.out.println("Перевод невозможен. Проверьте баланс и корректность счетов.");
         }
     }
+
+
+
 }

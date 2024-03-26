@@ -22,9 +22,9 @@ public class UsersRepository {
     private void initUser() {
         List<BankAccount> emptyAccountsList = new ArrayList<>();
         Users adminUser = new Users(userId.getAndIncrement(), "admin123",
-                "Vasya@gmail.com", "Kakasss1223!", Role.ADMIN, emptyAccountsList);
+                "admin", "admin", Role.ADMIN, emptyAccountsList);
         Users user2 = new Users(userId.getAndIncrement(), "user133",
-                "admnin", "admnin", Role.USER, emptyAccountsList);
+                "user", "user", Role.USER, emptyAccountsList);
         Users user3 = new Users(userId.getAndIncrement(), "user143",
                 "Vasya@gm2mail.com", "Kaka35s1223!", Role.USER, emptyAccountsList);
 
