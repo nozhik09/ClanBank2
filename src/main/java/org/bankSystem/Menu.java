@@ -2,11 +2,9 @@ package org.bankSystem;
 
 
 import org.bankSystem.model.BankAccount;
-import org.bankSystem.model.Currency;
 import org.bankSystem.model.Users;
-import org.bankSystem.network.CurrencyNetworkWorker;
-import org.bankSystem.network.LatestCurrencyResponse;
 import org.bankSystem.repository.BankAccountRepository;
+import org.bankSystem.repository.CurrencyRepository;
 import org.bankSystem.repository.UsersRepository;
 import org.bankSystem.service.*;
 import org.bankSystem.util.MyLinkedList;
@@ -27,7 +25,6 @@ public class Menu {
         CLOSE_ACCOUNT("Закрытие счёта"),
         EXCHANGE_HISTORY("История курса валют"),
         ADD_NEW_CURRENCY("Добавить новую валюту"),
-        CHECK_ALL_OPERATIONS("Просмотр всех операций"),
         CHECK_ALL_ACCOUNTS("Просмотр всех счетов"),
         CHANGES_EXCHANGE("Изменение курса валют"),
         EXCHANGE_ROLE("Изменение роли"),
@@ -118,18 +115,15 @@ public class Menu {
                 closeAccountAction();
                 break;
             case EXCHANGE_HISTORY:
-//                exchangeHistoryAction();
+                exchangeHistoryAction();
                 break;
             case ADD_NEW_CURRENCY:
                 addNewCurrency();
                 break;
             case CHANGES_EXCHANGE:
-
+                changesExchange();
                 break;
             case CHECK_ALL_ACCOUNTS:
-
-                break;
-            case CHECK_ALL_OPERATIONS:
 
                 break;
             case EXCHANGE_ROLE:
@@ -137,6 +131,7 @@ public class Menu {
                 break;
 
             case EXIT:
+                exitAction();
                 break;
         }
     }
@@ -170,7 +165,6 @@ public class Menu {
                 MenuItem.ADD_NEW_CURRENCY,
                 MenuItem.CHANGES_EXCHANGE,
                 MenuItem.CHECK_ALL_ACCOUNTS,
-                MenuItem.CHECK_ALL_OPERATIONS,
                 MenuItem.EXIT);
     }
 
@@ -283,18 +277,13 @@ public class Menu {
         bankAccountService.printAccountOperation(bankAccount.getAccountId());
     }
 
-//    private void exchangeHistoryAction() {
-//        System.out.println("Курс валют");
-//        try {
-//            LatestCurrencyResponse latestCurrencyResponse = currencyService.getExchangeCourse();//TODO передлать на историю всех валют
-//            for (String key : latestCurrencyResponse.getRates().keySet()) {
-//                System.out.printf("%s: %.4f\n", key, latestCurrencyResponse.getRates().get(key));
-//            }
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
+    private void exchangeHistoryAction() {//TODO изменил!
+        System.out.println("Курс валют за весь период");
+        currencyService.checkAllHistory();
+        System.out.println("Отсортировать валюту по коду или дате?");
+        currencyService.checksAboutCodeOrDate(scanner.nextLine());
+
+    }
 
     private void closeAccountAction() {
         System.out.println("Какой счёт вы хотите закрыть?");
@@ -316,16 +305,20 @@ public class Menu {
 
     }
 
-    private void addNewCurrency() {
+    private void addNewCurrency() { //TODO ТУТ ИЗМЕНИЛ
         System.out.println("Добавить новую валюту:");
+        System.out.println("Введите наименование валюты");
         String addCur1 = scanner.nextLine();
+        System.out.println("Введите код валюты");
         String addCur2 = scanner.nextLine();
+        System.out.println("Введите текущий курс валюты");
         double addCur3 = scanner.nextDouble();
-        currencyService.addNewCurrency(addCur1, addCur2, addCur3);//TODO что писать при джобавление валюты
+        currencyService.addNewCurrency(addCur1, addCur2, addCur3);
         System.out.println("Успешно добавлена!");
     }
 
-    private void changesExchange() {
+    private void changesExchange() { //TODO Добавил метод, лучше который просто обновляет список вал
+        currencyService.changeCurrencyRate(scanner.nextLine(), scanner.nextDouble());
         //Воздух
     }
 
@@ -349,23 +342,25 @@ public class Menu {
             BankAccount bankAccount = bankAccounts.get(i);
             System.out.printf("%d: %.2f %s\n", i + 1, bankAccount.getBalance(), bankAccount.getCurrency().getCode());
         }
-
         System.out.println("Введите номер счета:");
 
-         int accountIndex = scanner.nextInt()-1;
+        int accountIndex = scanner.nextInt() - 1;
 
         if (accountIndex < 0 || accountIndex >= bankAccounts.size()) {
             System.out.println("Некорректный номер счета. Пожалуйста, попробуйте снова.");
             return null;
         }
-
         return bankAccounts.get(accountIndex);
     }
 
+
     public static void main(String[] args) {
+        CurrencyRepository currencyRepository = new CurrencyRepository();
+        currencyRepository.writeTo();
+        System.out.println(currencyRepository.getCourseMap());
+//        System.out.println(currencyRepository.getCourseMap());
         Menu menu1 = new Menu();
         menu1.run();
-
 //        CurrencyNetworkWorker worker = new CurrencyNetworkWorker();
 //        try {
 //            LatestCurrencyResponse latestCurrencyResponse = worker.requestLatestCurrency();
@@ -379,12 +374,10 @@ public class Menu {
 //            System.out.printf("%s: %.4f\n", code, latestCurrencyResponse.getRates().get(code));
 //        } catch (Exception e) {
 //            e.printStackTrace();
-//        }
-
     }
 
-
 }
+
 
 
 

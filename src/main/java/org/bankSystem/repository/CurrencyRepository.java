@@ -11,9 +11,11 @@ import java.time.LocalDate;
 import java.util.*;
 
 public class CurrencyRepository {
+    LatestCurrencyResponse latestCurrencyResponse = new LatestCurrencyResponse();
 
-    private Map<Currency, Course> courseMap = new HashMap<>();
+    private Map<String, Double> courseMap = new HashMap<>();
     private Set<Currency> setCurrency = new HashSet<>();
+
     String path = "src/main/java/org/bankSystem/repository/CurrencyChangeList.txt";
     String listOfAvailableCurrencies = "src/repository/listOfAvailableCurrencies.txt";
 
@@ -31,9 +33,8 @@ public class CurrencyRepository {
     }
 
     public void setCourseMap() {
-        courseMap.put(new Currency("Euro", "EUR"), new Course(11.4));
-        courseMap.put(new Currency("American Dollar", "USD"), new Course(14.4));
-
+        courseMap.put("EUR", 14.5);
+        courseMap.put("USD", 14.4);
     }
 
 
@@ -42,51 +43,30 @@ public class CurrencyRepository {
         return setCurrency;
     }
 
-    public Map<Currency, Course> getCourseMap() {
+    public Map<String, Double> getCourseMap() {
         return courseMap;
     }
 
     // Добавление новой валюты +//TODO Добавлять в TXT?
     public Currency addNewCurrency(String name, String code, Double rate) {
         Currency currency = new Currency(name, code);
+        Course course = new Course(rate);
         setCurrency.add(currency);
-        courseMap.put(currency, new Course(rate));
+        courseMap.put(code, rate);
+        writeToFile(currency.getCode(), rate);
         return currency;
-    }
-
-
-    //Удаление валюты из всех доступных
-    public Currency removeCurrency(String name, String code) {
-        Currency currency = new Currency(name, code);
-        setCurrency.remove(currency);
-        return currency;
-    }
-
-
-    public Map<Currency, Course> changeCourseRate(String code, Double newRate) {
-        Currency currency = null;
-        for (Currency c : setCurrency) {
-            if (c.getCode().equals(code)) {
-                currency = c;
-                break;
-            }
-        }
-        Course course = courseMap.get(currency);
-        course.setCourse(newRate);
-        courseMap.put(currency, course);
-        writeToFile(currency, course);
-        return courseMap;
     }
 
     public void writeTo() {
         CurrencyNetworkWorker worker = new CurrencyNetworkWorker();
-        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(path, true))){
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(path, true))) {
             LatestCurrencyResponse latestCurrencyResponse = worker.requestLatestCurrency();
             for (String key : latestCurrencyResponse.getRates().keySet()) {
                 System.out.printf("%s: %.4f\n", key, latestCurrencyResponse.getRates().get(key));
-                bufferedWriter.write(key + " : " + latestCurrencyResponse.getRates().get(key) +": " + LocalDate.now());
+                bufferedWriter.write(key + " : " + latestCurrencyResponse.getRates().get(key) + " Date:" + LocalDate.now());
                 bufferedWriter.newLine();
             }
+            courseMap.putAll(latestCurrencyResponse.getRates());
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
@@ -95,9 +75,37 @@ public class CurrencyRepository {
     }
 
 
-    private void writeToFile(Currency currency, Course course) {
+    //Удаление валюты из всех доступных
+    public Currency removeCurrency(String name, String code) {
+        Currency currency = new Currency(name, code);
+        courseMap.remove(code);
+        return currency;
+    }
+
+
+    public Map<String, Double> changeCourseRate(String code, Double newRate) {
+        if (!courseMap.keySet().contains(code)) {
+            return null;
+        }
+
+        courseMap.put(code,newRate);
+        writeToFile(code, newRate);
+        return courseMap;
+
+
+//        Course course = new Course(newRate);
+//        course.setCourse(newRate);
+//        courseMap.put(currency.getCode(), newRate);
+
+//        return courseMap;
+    }
+
+
+    private void writeToFile(String code, Double d) {
+
+        Currency currency1 = new Currency("", code);
         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(path, true))) {
-            bufferedWriter.write(currency.getCode() + ": " + course.getCourse() + " Date: " + course.getLocalDate());
+            bufferedWriter.write(currency1.getCode() + " : " + d + " Date:" + LocalDate.now());
             bufferedWriter.newLine();
 
 
@@ -124,6 +132,7 @@ public class CurrencyRepository {
             while ((line = bufferedReader.readLine()) != null) {
                 if (line.contains(code))
                     System.out.println(line);
+
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -158,9 +167,8 @@ public class CurrencyRepository {
         }
         return null;
 
+
     }
-
-
 }
 
 
