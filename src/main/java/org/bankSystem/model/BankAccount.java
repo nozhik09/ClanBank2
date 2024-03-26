@@ -3,14 +3,14 @@ package org.bankSystem.model;
 public class BankAccount {
 
     private double balance;
-    private int id;
+    private int accountId;
     private Users users;
     private Currency currency;
 
 
-    public BankAccount(double balance, int id, Users users, Currency currency) {
+    public BankAccount(double balance, int accountId, Users users, Currency currency) {
         this.balance = balance;
-        this.id = id;
+        this.accountId = accountId;
         this.users = users;
         this.currency = currency;
     }
@@ -23,12 +23,12 @@ public class BankAccount {
         this.balance = balance;
     }
 
-    public int getId() {
-        return id;
+    public int getAccountId() {
+        return accountId;
     }
 
     public void setId(int id) {
-        this.id = id;
+        this.accountId = id;
     }
 
     public Users getUsers() {
@@ -47,11 +47,15 @@ public class BankAccount {
         this.currency = currency;
     }
 
+    public void setAccountId(int accountId) {
+        this.accountId = accountId;
+    }
+
     @Override
     public String toString() {
         return "BankAccount{" +
                 "balance=" + balance +
-                ", id='" + id + '\'' +
+                ", id='" + accountId + '\'' +
                 ", users=" + users +
                 ", currency=" + currency +
                 '}';
